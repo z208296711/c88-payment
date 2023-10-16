@@ -1,0 +1,178 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.WithdrawMapper">
+
+    <select id="listWithdraw" resultType="com.c88.payment.pojo.vo.withdraw.WithdrawReportVO">
+        <include refid="com.c88.payment.mapper.WithdrawMapper.query"></include>
+    </select>
+    <select id="queryWithdraw" resultType="com.c88.payment.pojo.vo.withdraw.WithdrawVO">
+        <include refid="com.c88.payment.mapper.WithdrawMapper.query"></include>
+    </select>
+    <select id="listRemit" resultType="com.c88.payment.pojo.vo.withdraw.RemitReportVO">
+        <include refid="com.c88.payment.mapper.WithdrawMapper.queryRemit"></include>
+    </select>
+    <select id="queryRemit" resultType="com.c88.payment.pojo.vo.withdraw.RemitVO">
+        <include refid="com.c88.payment.mapper.WithdrawMapper.queryRemit"></include>
+    </select>
+    <sql id="query">
+        SELECT w.*
+        ,(SELECT mr.content FROM member_remark mr
+        WHERE mr.uid = w.uid ORDER BY w.gmt_modified DESC LIMIT 1) AS last_remark
+        ,(SELECT JSON_ARRAYAGG(wr.risk_type) FROM withdraw_risk wr
+        WHERE wr.withdraw_id=w.id) AS riskTypes
+        FROM payment_member_withdraw w
+        <where>
+        <choose >
+            <when  test='queryParams.type == 1 '>
+              AND w.type= 1
+            </when>
+            <otherwise>
+                <if test='queryParams.affiliateUsername == null || queryParams.affiliateUsername =="" '>
+                    AND w.type= 0
+                </if>
+                <if test='queryParams.affiliateUsername !=null '>
+                    AND w.type= 1
+                    AND w.username= #{queryParams.affiliateUsername}
+                </if>
+            </otherwise>
+        </choose>
+            <if test='queryParams.username !=null '>
+                AND w.username= #{queryParams.username}
+            </if>
+            <if test='queryParams.withdrawNo !=null '>
+                AND w.withdraw_no= #{queryParams.withdrawNo}
+            </if>
+            <if test='queryParams.firstUser !=null '>
+                AND w.first_user = #{queryParams.firstUser}
+            </if>
+            <if test='queryParams.secondUser !=null '>
+                AND w.second_user =#{queryParams.secondUser}
+            </if>
+            <if test='queryParams.riskType !=null '>
+                AND w.id in(SELECT wr.withdraw_id FROM
+                withdraw_risk wr WHERE wr.risk_type=#{queryParams.riskType})
+            </if>
+            <if test='queryParams.status !=null '>
+                AND w.state = #{queryParams.status}
+            </if>
+            <if test='queryParams.level !=null and queryParams.level ==1'>
+                AND w.state = 0
+            </if>
+            <if test='queryParams.level !=null and queryParams.level ==2'>
+                AND w.state = 2
+            </if>
+            <if test='queryParams.timeType == 0'>
+                <if test='queryParams.beginTime !=null and  queryParams.beginTime.trim() neq ""'>
+                    AND w.apply_time &gt;= #{queryParams.beginTime}
+                </if>
+                <if test='queryParams.endTime !=null and  queryParams.endTime.trim() neq ""'>
+                    AND w.apply_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 1'>
+                <if test='queryParams.beginTime !=null and  queryParams.beginTime.trim() neq ""'>
+                    AND w.first_time &gt;= #{queryParams.beginTime}
+                </if>
+                <if test='queryParams.endTime !=null and  queryParams.endTime.trim() neq ""'>
+                    AND w.first_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 2'>
+                <if test='queryParams.beginTime !=null and  queryParams.beginTime.trim() neq ""'>
+                    AND w.second_time &gt;= #{queryParams.beginTime}
+                </if>
+                <if test='queryParams.endTime !=null and  queryParams.endTime.trim() neq ""'>
+                    AND w.second_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+        </where>
+        <if test='queryParams.currentUser == null or queryParams.currentUser.trim() eq ""'>
+            ORDER BY w.apply_time DESC
+        </if>
+        <if test='queryParams.currentUser != null and queryParams.currentUser.trim() neq ""'>
+            <if test='queryParams.level !=null and queryParams.level ==1'>
+                ORDER BY w.first_user = #{queryParams.currentUser} DESC, w.apply_time DESC
+            </if>
+            <if test='queryParams.level !=null and queryParams.level ==2'>
+                ORDER BY w.second_user = #{queryParams.currentUser} DESC, w.apply_time DESC
+            </if>
+        </if>
+    </sql>
+
+    <sql id="queryRemit">
+        SELECT w.*
+        ,(SELECT b.name FROM payment_bank b
+        WHERE b.id=w.bank_id LIMIT 1) AS channel
+        ,(CASE WHEN w.merchant_id is not null THEN
+        (SELECT m.name FROM payment_merchant m
+        WHERE m.id=w.merchant_id LIMIT 1) ELSE
+        (SELECT c.code FROM payment_company_bank_card c
+        WHERE c.id=w.company_bank_card_id LIMIT 1) END) AS remit_type
+        FROM payment_member_withdraw w
+        <where>
+            w.state = 3 <!-- 提款審核通過 -->
+            <if test='queryParams.affiliateUsername !=null '>
+                AND w.type= 1
+            </if>
+
+            <if test='queryParams.username !=null '>
+                AND w.type= 0
+            </if>
+
+            <if test="queryParams.affiliateUsername !='' and queryParams.affiliateUsername !=null ">
+                AND w.username= #{queryParams.affiliateUsername}
+            </if>
+            <if test="queryParams.username !='' and queryParams.username !=null">
+                AND w.username= #{queryParams.username}
+            </if>
+
+            <if test='queryParams.withdrawNo !=null '>
+                AND w.withdraw_no= #{queryParams.withdrawNo}
+            </if>
+            <if test='queryParams.remitUser !=null '>
+                AND w.remit_user = #{queryParams.remitUser}
+            </if>
+            <if test='queryParams.merchantId !=null '>
+                AND w.merchant_id= #{queryParams.merchantId}
+            </if>
+            <if test='queryParams.companyBankCardId !=null '>
+                AND w.company_bank_card_id = #{queryParams.companyBankCardId}
+            </if>
+            <if test='queryParams.vipId !=null '>
+                AND w.vip_id = #{queryParams.vipId}
+            </if>
+            <if test='queryParams.minAmount !=null '>
+                AND w.amount >= #{queryParams.minAmount}
+            </if>
+            <if test='queryParams.maxAmount !=null '>
+                AND #{queryParams.maxAmount} >= w.amount
+            </if>
+            <if test='queryParams.statuses !=null and queryParams.statuses.size()>0'>
+                AND w.remit_state in
+                <foreach collection="queryParams.statuses" item="item" index="index" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test='queryParams.timeType == 0'>
+                <if test='queryParams.beginTime !=null and  queryParams.beginTime.trim() neq ""'>
+                    AND w.apply_time &gt;= #{queryParams.beginTime}
+                </if>
+                <if test='queryParams.endTime !=null and  queryParams.endTime.trim() neq ""'>
+                    AND w.apply_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 1'>
+                <if test='queryParams.beginTime !=null and  queryParams.beginTime.trim() neq ""'>
+                    AND w.remit_time &gt;= #{queryParams.beginTime}
+                </if>
+                <if test='queryParams.endTime !=null and  queryParams.endTime.trim() neq ""'>
+                    AND w.remit_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+        </where>
+        ORDER BY (CASE WHEN w.second_time is not null THEN w.second_time ELSE w.first_time END) DESC
+    </sql>
+
+</mapper>

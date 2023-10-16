@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.MerchantRechargeChannelMapper">
+
+    <resultMap id="BaseResultMap" type="com.c88.payment.pojo.entity.MerchantRechargeChannel">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="merchantId" column="merchant_id" jdbcType="BIGINT"/>
+            <result property="rechargeTypeId" column="recharge_type_id" jdbcType="BIGINT"/>
+            <result property="bankId" column="bank_id" jdbcType="BIGINT"/>
+            <result property="param" column="param" jdbcType="VARCHAR"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="minAmount" column="min_amount" jdbcType="DECIMAL"/>
+            <result property="maxAmount" column="max_amount" jdbcType="DECIMAL"/>
+            <result property="dailyMaxAmount" column="daily_max_amount" jdbcType="DECIMAL"/>
+            <result property="enable" column="enable" jdbcType="TINYINT"/>
+            <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+            <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,merchant_id,recharge_type_id,
+        bank_id,param,name,
+        min_amount,max_amount,daily_max_amount,
+        enable,gmt_modified,gmt_create
+    </sql>
+
+    <select id="findMatchRechargeChannelBanks" resultType="com.c88.payment.pojo.entity.Bank" parameterType="com.c88.payment.pojo.entity.MemberChannel">
+        SELECT pb.*
+        FROM payment_merchant_recharge_channel pc
+            LEFT JOIN payment_bank pb on pb.id = pc.bank_id
+        WHERE pc.recharge_type_id = #{memberChannel.rechargeTypeId}
+          and pc.enable = 1
+          and pb.state in (1, 2)
+          AND pc.merchant_id = #{memberChannel.merchantId};
+    </select>
+
+</mapper>

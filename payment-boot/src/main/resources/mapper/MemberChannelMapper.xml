@@ -1,0 +1,185 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.MemberChannelMapper">
+
+    <resultMap id="BaseResultMap" type="com.c88.payment.pojo.vo.MemberChannelRedis">
+        <id property="id" column="id" jdbcType="BIGINT"/>
+        <result property="rechargeTypeId" column="recharge_type_id" jdbcType="BIGINT"/>
+        <result property="companyBankCardGroupId" column="company_bank_card_group_id" jdbcType="BIGINT"/>
+        <result property="rechargeShowName" column="recharge_show_name" jdbcType="VARCHAR"/>
+        <result property="merchantCode" column="merchant_code" jdbcType="VARCHAR"/>
+        <result property="merchantId" column="merchant_id" jdbcType="BIGINT"/>
+        <result property="merchantName" column="merchant_name" jdbcType="VARCHAR"/>
+        <result property="channelName" column="channel_name" jdbcType="VARCHAR"/>
+        <result property="maxRechargeAmount" column="max_recharge_amount" jdbcType="DECIMAL"/>
+        <result property="minRechargeAmount" column="min_recharge_amount" jdbcType="DECIMAL"/>
+        <result property="remark" column="remark" jdbcType="VARCHAR"/>
+        <result property="status" column="status" jdbcType="BIGINT"/>
+        <result property="merchantStatus" column="merchant_status" jdbcType="BIGINT"/>
+        <result property="type" column="type" jdbcType="BIGINT"/>
+        <result property="deleted" column="deleted" jdbcType="BIGINT"/>
+        <result property="gmtCreate" column="gmt_create" jdbcType="TIMESTAMP"/>
+        <result property="gmtModified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+        <collection property="vipIds" ofType="string" javaType="list">
+            <result column="vip_ids" typeHandler="com.c88.common.mybatis.handler.ListStringTypeHandler"/>
+        </collection>
+        <collection property="memberTags" ofType="string" javaType="list">
+            <result column="member_tags" typeHandler="com.c88.common.mybatis.handler.ListStringTypeHandler"/>
+        </collection>
+    </resultMap>
+
+    <select id="queryMemberChannelList" resultType="com.c88.payment.pojo.vo.MemberChannelVO">
+        SELECT pc.id,
+        CASE pc.recharge_type_id WHEN 7 THEN pg.name ELSE pt.name END AS rechargeTypeName,
+        pc.recharge_type_id,
+        pc.type,
+        pc.company_bank_card_group_id,
+        pc.recharge_show_name,
+        pc.merchant_id,
+        pc.merchant_name,
+        pc.channel_name,
+        pc.vip_ids as vipIds,
+        (SELECT JSON_ARRAYAGG(t.id) FROM channel_tag ct, tag t WHERE ct.channel_id=pc.id AND ct.tag_id=t.id) AS
+        memberTags,
+        pc.max_recharge_amount,
+        pc.min_recharge_amount,
+        pc.remark,
+        pc.status,
+        pc.merchant_status
+        FROM payment_member_channel pc
+        LEFT JOIN payment_recharge_type pt ON pt.id = pc.recharge_type_id
+        LEFT JOIN payment_company_bank_card_group pg ON pg.id = pc.company_bank_card_group_id
+        <where>
+            AND pc.deleted = 0
+            <if test='queryParams.id !=null '>
+                AND pc.id= #{queryParams.id}
+            </if>
+            <if test='queryParams.rechargeShowName !=null '>
+                AND pc.recharge_show_name= #{queryParams.rechargeShowName}
+            </if>
+            <if test='queryParams.rechargeTypeId !=null '>
+                AND pc.recharge_type_id=#{queryParams.rechargeTypeId}
+            </if>
+            <if test='queryParams.companyBankCardGroupId !=null '>
+                AND pc.company_bank_card_group_id=#{queryParams.companyBankCardGroupId}
+            </if>
+            <if test='queryParams.merchantId!=null '>
+                AND pc.merchant_id=#{queryParams.merchantId}
+            </if>
+            <if test='queryParams.channelName !=null '>
+                AND pc.channel_name=#{queryParams.channelName}
+            </if>
+            <if test='queryParams.status !=null '>
+                AND pc.status=#{queryParams.status}
+            </if>
+            <if test='queryParams.merchantStatus !=null '>
+                AND pc.merchant_status = #{queryParams.merchantStatus}
+            </if>
+        </where>
+        ORDER BY id DESC
+    </select>
+
+    <select id="findMemberCanUsedChannel" resultType="com.c88.payment.pojo.entity.MemberChannel">
+        SELECT mc.*
+        FROM payment_member_channel mc
+                 LEFT JOIN channel_tag ct on mc.id = ct.channel_id
+                 LEFT JOIN member_tag mt on ct.tag_id = mt.tag_id
+                 LEFT JOIN member m on mt.member_id = m.id
+        WHERE m.id = #{memberId}
+          and recharge_type_id = #{rechargeTypeId}
+          and mc.status = 1
+          and mc.deleted = 0
+    </select>
+
+    <select id="findCanUsedChannelByMember" resultType="com.c88.payment.pojo.entity.MemberChannel">
+        SELECT mc.*
+        FROM payment_member_channel mc
+                 LEFT JOIN channel_tag ct on mc.id = ct.channel_id
+                 LEFT JOIN member_tag mt on ct.tag_id = mt.tag_id
+                 LEFT JOIN member m on mt.member_id = m.id
+        WHERE m.id = #{memberId}
+          and mc.status = 1
+          and mc.deleted = 0
+    </select>
+
+
+    <select id="findUsableMemberChannel" resultType="com.c88.payment.pojo.entity.MemberChannel">
+        SELECT mc.*
+        FROM payment_member_channel mc
+        left join channel_tag ct on mc.id = ct.channel_id
+        left join payment_member_channel_vip_config_mapping pmcvcm on mc.id = pmcvcm.member_channel_id
+        left join payment_member_channel_group pmcg on pmcg.member_chanel_id = mc.id and pmcg.vip_config_id = pmcvcm.vip_config_id
+        <where>
+            exists (select * from payment_merchant pm where mc.merchant_id = pm.id and enable = 1)
+            and  exists(select * from payment_merchant_recharge_type pmrt where pmrt.recharge_type_id = mc.recharge_type_id and pmrt.enable = 1 and mc.merchant_id = pmrt.merchant_id)
+
+            and  mc.status = 1 and mc.deleted = 0
+            <if test='!queryParams.tagIdList.isEmpty()'>
+                AND ct.tag_id  in
+                <foreach collection="queryParams.tagIdList" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test='queryParams.currentVipId != null'>
+                AND pmcvcm.vip_config_id =  #{queryParams.currentVipId}
+            </if>
+            <if test='rechargeTypeId != null'>
+                AND mc.recharge_type_id = #{rechargeTypeId}
+            </if>
+            OR (pmcvcm.vip_config_id = #{queryParams.currentVipId}
+            AND mc.status = 1 AND mc.deleted = 0 and member_tags IS NULL)
+        </where>
+        group by  mc.id
+        order by pmcg.sort
+    </select>
+
+    <select id="findUsableMemberChannelByCompany" resultType="com.c88.payment.pojo.entity.MemberChannel">
+        SELECT mc.*
+        FROM payment_member_channel mc
+        left join channel_tag ct on mc.id = ct.channel_id
+        left join payment_member_channel_vip_config_mapping pmcvcm on mc.id = pmcvcm.member_channel_id
+        left join payment_member_channel_group pmcg on pmcg.member_chanel_id = mc.id and pmcg.vip_config_id = pmcvcm.vip_config_id
+        <where>
+            AND mc.status = 1 AND mc.deleted = 0
+            <if test='!queryParams.tagIdList.isEmpty()'>
+                AND ct.tag_id  in
+                <foreach collection="queryParams.tagIdList" item="id" open="(" close=")" separator=",">
+                    #{id}
+                </foreach>
+            </if>
+            <if test='queryParams.currentVipId != null'>
+                AND pmcvcm.vip_config_id =  #{queryParams.currentVipId}
+            </if>
+            <if test='rechargeTypeId != null'>
+                AND mc.recharge_type_id = #{rechargeTypeId}
+            </if>
+            OR (pmcvcm.vip_config_id = #{queryParams.currentVipId} AND mc.recharge_type_id = #{rechargeTypeId}
+                    AND mc.status = 1 AND mc.deleted = 0 and member_tags IS NULL)
+        </where>
+        group by  mc.id
+        ORDER BY pmcg.sort
+    </select>
+
+    <select id="findMemberChannel" resultMap="BaseResultMap">
+        SELECT mc.*
+        FROM payment_member_channel mc
+        left join channel_tag ct on mc.id = ct.channel_id
+        left join payment_member_channel_vip_config_mapping pmcvcm on mc.id = pmcvcm.member_channel_id
+        left join payment_member_channel_group pmcg on pmcg.member_chanel_id = mc.id and pmcg.vip_config_id = pmcvcm.vip_config_id
+        left join payment_merchant pm on pm.`code`=mc.merchant_code and pm.`enable`=1
+        left join payment_merchant_recharge_type pmrt on pmrt.merchant_id = pm.id and pmrt.`enable`=1
+        <where>
+            and  mc.status = 1 and mc.deleted = 0
+            <if test='vipId != null'>
+                AND pmcvcm.vip_config_id = #{vipId}
+            </if>
+            <if test='rechargeTypeId != null'>
+                AND mc.recharge_type_id = #{rechargeTypeId}
+            </if>
+        </where>
+        order by pmcg.sort
+    </select>
+
+</mapper>

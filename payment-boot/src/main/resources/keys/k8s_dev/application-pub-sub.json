@@ -1,0 +1,12 @@
+{
+  "type": "service_account",
+  "project_id": "dev-sports",
+  "private_key_id": "6e6e12af49168044449506d5cd99d3c527467022",
+  "private_key": "-----BEGIN PRIVATE KEY-----\nMIIEvQIBADANBgkqhkiG9w0BAQEFAASCBKcwggSjAgEAAoIBAQCmiq571D60eCtk\n98/BAe5qY2xpK53DAmIE5f0ETSITm0dsaylJv1NOxBK8e/1VdP6rdeH6Jw6aA1c5\n6Q76vdcRoTQ60ee48aWVY5gMqp93dGGm98RbALIS3DS0n25PzxNNwb/UeJsReJiy\nQVgnNxaoD8Zgi6ImmrZGH02UszlgekWL/gVIsLAcfDu0dCEFeB6NF2KATl5Ny6a1\nOujbJ+6phmiWFXEdAtpWsguMtsfc3SYoPHgs2htSIW881BnYdnRrpb8ViEb9a066\nKtD2Xs5N51tEqsrgrdd+7s8YzRa+3AnP1KV23Kj6xLEGcuL/b7g3XfagJ+j/hnZW\nB3iTiFXfAgMBAAECggEAScjceBE3PMaW1zNxkH3WDr2A3PGNgkXufmQU3pB73fro\nQHETyFAjTRzSfj5ipTdh0z41gZpHPlXnkckfMVjlTbLBjKPNyaMJ7O9EgKwhXY+q\n6goQrQ7YVkHIehO+kE5aq5MA9dX/QdTPtf38W9dsysW+aqzCiN73jYa13QEwlPyw\nFvI+xt87f/5cUrtGRgXnS/YE2s/tWgnBdTUd+YzcTzLdxC8Cbnx5mHSg6qVUkFfH\nfgBbuNxxo8C+lwPgzMxt/7rmgm7cCV9JNAcyH/7yI9Yz+Isq+vrzTvKDPpUwH02k\nbzoqF6XFpk9aXzfu+5JMgTEAfeSoDTZRl73jvb2pDQKBgQDP5agWZt1fr3LlLjdb\n0zS0rxhD7pV/jZeCA2RykWUEFUAaHD8LcsE6NHnWGXoHy6Wu21zjGPUcqCztvft0\n5x5Eg9R7CIFROp76yYl0Dj0Zc4L9lUFlMiL+sGAMMeE1szzIlkb76SZX4w+/JZgz\nyN7KHDA2wt8kbQV5uyDHZVFaowKBgQDNE21khOe55jPWJ8uiFvOmTHWZ4eQJI0ku\nJGcJyYXIK8/M4uH7O7HQZ/5ije/RRq7eb8jnUH2pdgi1/igZNU+lO819eMK/yFCL\nOjCRfiqZ9Zogx/F2TxjG76YO2nxksYQ7ztxIg2AskFw2Bc/BFbHUTKv10vegnTjI\niFZo691nlQKBgEFSd64SRBx8lC1OiDZh9n2PRqCRpoedha1kQ3t8E7Fku+94UJbY\nR75yHpYXCzDH3BdE9bqlbN7EONm6h/gDZo9AnNLLqVZMhQdnq7i7gJcupEnpS9Lw\nHe7InGU4hvrIhqDAFy2v5ExZG+mDdn9O7jGzCbMrJ9HaL45ALdx5CUbhAoGBAIXM\nwhfOWv5AQtvb9RFZVjjPM/9lkYmguxNe7tdE44NZimfMM9Ld/MLTxvZ4UtrA+kDo\nwDSjoIlbGI3dOD5SORe+b/EIRFAqmtpr6dpTbeorgxcWPOWK78iD/V09keGErJj0\n+2ZYSPxqZ69blVQOGotARwXJUoU5bx3vTimAkmENAoGAEh4m4b+TCLlqJAESQP4u\njnaYbvMe2u7DUa6zgPIBTEp0FPEK4rqsvsS2vloKiB63NkPdA9/ABHyNU7BxloiD\nrVGJZWfcSpWcYZd3VI41Frm2g3uU69jQ1b3v7pNEP7QDEOuFSwMznWCmC6M114fE\nFr6E5xwnUQi/BezITYGw2+E=\n-----END PRIVATE KEY-----\n",
+  "client_email": "application-pub-sub@dev-sports.iam.gserviceaccount.com",
+  "client_id": "115473051335254588910",
+  "auth_uri": "https://accounts.google.com/o/oauth2/auth",
+  "token_uri": "https://oauth2.googleapis.com/token",
+  "auth_provider_x509_cert_url": "https://www.googleapis.com/oauth2/v1/certs",
+  "client_x509_cert_url": "https://www.googleapis.com/robot/v1/metadata/x509/application-pub-sub%40dev-sports.iam.gserviceaccount.com"
+}

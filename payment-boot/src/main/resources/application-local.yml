@@ -1,0 +1,89 @@
+spring:
+  rabbitmq:
+    host: c88-rabbitmq.c88
+    port: 5672
+    username: default_user_HsMJ5kUM_Xl0xkwKC9x
+    password: mhXn1tDjBk7WIbzW8IGbf8vABeWWGoDM
+    listener:
+      simple:
+        acknowledge-mode: manual
+  datasource:
+    url: jdbc:mysql://34.84.138.202:3306/c88?serverTimezone=GMT&useUnicode=true&characterEncoding=utf8&useSSL=false
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    username: root
+    password: Y7HJv8Pdd86RtQ92hbPbbhET
+  redis:
+    host: dev-c88-internal.hyu.tw
+    port: 6379
+    password: 4c55365c-009b-477b-ae47-07f15947c164
+    database: 0
+  kafka:
+    bootstrap-servers: 10.250.222.1:9092,10.250.222.2:9092,10.250.222.3:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+  cloud:
+    kubernetes:
+      enabled: false
+    gcp:
+      credentials:
+        location: classpath:keys/k8s_dev/application-pub-sub.json
+      project-id: dev-sports
+      storage:
+        credentials:
+          location: classpath:keys/k8s_dev/google-cloud-storage.json
+      pubsub:
+        enabled: true
+        subscriber:
+          executor-threads: 8
+        credentials:
+          location: classpath:keys/k8s_dev/application-pub-sub.json
+  cache:
+    # 缓存类型 redis、none(不使用缓存)
+    type: redis
+    # 缓存时间(单位：ms)
+    redis:
+      time-to-live: 3600000
+      # 缓存null值，防止缓存穿透
+      cache-null-values: true
+      # 允许使用缓存前缀
+      use-key-prefix: true
+      # 缓存前缀，没有设置使用注解的缓存名称(value)作为前缀，和注解的key用双冒号::拼接组成完整缓存key
+      key-prefix: 'game:'
+
+redisson:
+  address: redis://dev-c88-internal.hyu.tw:6379
+  password: 4c55365c-009b-477b-ae47-07f15947c164
+
+#GCP設定
+file:
+  bucket: dev-comebet
+  upload:
+    root: https://dev-comebet.storage.googleapis.com
+    temp:
+    web:
+      root: https://dev-comebet.storage.googleapis.com
+
+#中心任務啟用狀態
+center-task-client:
+  enable: false
+
+#中心任務設定
+xxl:
+  job:
+    executor:
+      ip:
+      log-retention-days: 30
+      app-name: payment
+      log-path: ./logs/
+      address:
+      port: 9999
+    accessToken:
+    admin:
+      addresses: http://127.0.0.1:8080/xxl-job-admin

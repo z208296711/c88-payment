@@ -1,0 +1,41 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.CompanyBankCardMapper">
+
+    <select id="findCompanyCardPage" resultType="com.c88.payment.pojo.vo.CompanyBankCardVO">
+        select
+            pc.id id,
+            pc.code code,
+            pc.owner owner,
+            pc.bank_card_no bankCardNo,
+            pb.id bankId,
+            pb.name bank,
+            pcg.id `groupId`,
+            pcg.name `group`,
+            pc.daily_max_amount dailyMaxAmount,
+            pc.max_amount maxAmount,
+            pc.min_amount minAmount,
+            pc.note note,
+            pc.comments comments,
+            pc.enable enable
+        from payment_company_bank_card pc
+                 left join payment_company_bank_card_group pcg on pc.group_id = pcg.id
+                 left join payment_bank pb on pc.bank_id = pb.id
+        ${ew.customSqlSegment}
+    </select>
+    <select id="findCompanyCardCanUsedByGroupId" resultType="com.c88.payment.pojo.entity.CompanyBankCard" parameterType="java.util.ArrayList">
+        select *
+        from payment_company_bank_card pc
+            left join payment_bank pb on pc.bank_id = pb.id
+           <where>
+             AND group_id in
+             <foreach item = "groupId" collection = "groupIds" separator = "," open="(" close=")">
+               #{groupId}
+             </foreach>
+               AND pc.enable = 1 and pb.state != 0 and pc.deleted = 0
+           </where>
+    </select>
+
+</mapper>

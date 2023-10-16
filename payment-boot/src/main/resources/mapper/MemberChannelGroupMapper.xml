@@ -1,0 +1,38 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.MemberChannelGroupMapper">
+
+    <select id="findMemberChannelGroup" resultType="com.c88.payment.pojo.vo.MemberChannelGroupVO" parameterType="com.c88.payment.pojo.form.FindMemberChannelGroupForm">
+        SELECT pc.id,
+        CASE pc.recharge_type_id WHEN 7 THEN pcbcg.name ELSE pt.name END AS rechargeTypeName,
+        pc.recharge_type_id,
+        pc.recharge_show_name,
+        pc.merchant_name,
+        pc.channel_name,
+        pc.max_recharge_amount,
+        pc.min_recharge_amount,
+        pc.status,
+        pg.sort
+        FROM payment_member_channel_group pg
+        LEFT JOIN payment_member_channel pc on pc.id = pg.member_chanel_id
+        LEFT JOIN payment_company_bank_card_group pcbcg ON pcbcg.id = pc.company_bank_card_group_id
+        LEFT JOIN payment_recharge_type pt ON pt.id = pc.recharge_type_id
+        WHERE pg.vip_config_id = #{queryParams.vipId} and pg.recharge_type_id = #{queryParams.rechargeTypeId}
+        ORDER BY sort ASC;
+    </select>
+
+    <update id="modifyMemberChannelGroupBottom" parameterType="java.lang.Integer">
+        UPDATE payment_member_channel_group pmcg ,(SELECT MAX(sort) AS sort FROM payment_member_channel_group) AS max_sort
+        SET pmcg.sort = max_sort.sort + 1
+        WHERE id = #{id}
+    </update>
+
+    <update id="modifyMemberChannelGroupTop" parameterType="java.lang.Integer">
+        UPDATE payment_member_channel_group pmcg ,(SELECT MIN(sort) AS sort FROM payment_member_channel_group) AS min_sort
+        SET pmcg.sort = min_sort.sort - 1
+        WHERE id = #{id}
+    </update>
+
+</mapper>

@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.RechargeTypeMapper">
+
+    <resultMap id="BaseResultMap" type="com.c88.payment.pojo.entity.RechargeType">
+            <id property="id" column="id" jdbcType="BIGINT"/>
+            <result property="name" column="name" jdbcType="VARCHAR"/>
+            <result property="sort" column="sort" jdbcType="INTEGER"/>
+            <result property="channel_ids" column="channel_ids" jdbcType="VARCHAR"/>
+            <result property="type" column="type" jdbcType="TINYINT"/>
+            <result property="enable" column="enable" jdbcType="TINYINT"/>
+            <result property="gmt_modified" column="gmt_modified" jdbcType="TIMESTAMP"/>
+            <result property="gmt_create" column="gmt_create" jdbcType="TIMESTAMP"/>
+    </resultMap>
+
+    <sql id="Base_Column_List">
+        id,name,sort,
+        channel_ids,type,enable,
+        gmt_modified,gmt_create
+    </sql>
+
+    <select id="findRechargeTypeOptionByVip" resultType="com.c88.payment.pojo.vo.RechargeTypeVO">
+        SELECT DISTINCT pt.id, pt.name
+        FROM c88.payment_member_channel mc
+                 LEFT JOIN c88.payment_member_channel_vip_config_mapping pm on mc.id = pm.member_channel_id
+                 LEFT JOIN c88.payment_recharge_type pt on pt.id = mc.recharge_type_id
+        WHERE pm.vip_config_id = #{vipId} and mc.deleted = 0
+    </select>
+
+</mapper>

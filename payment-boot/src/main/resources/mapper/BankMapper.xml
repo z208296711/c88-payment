@@ -1,0 +1,18 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.BankMapper">
+
+    <update id="modifyBankSortBottom" parameterType="java.lang.Long">
+        update payment_bank gps,(select max(ps.sort) as sort from payment_bank ps) as max_sort
+        set gps.sort = max_sort.sort + 1
+        where gps.id = #{id}
+    </update>
+
+    <update id="modifyBankSortTop" parameterType="java.lang.Long">
+        update c88.payment_bank gps,(select min(ps.sort) as sort from payment_bank ps) as min_sort
+        set gps.sort = min_sort.sort - 1
+        where gps.id = #{id}
+    </update>
+</mapper>

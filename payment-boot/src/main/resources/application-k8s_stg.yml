@@ -1,0 +1,81 @@
+spring:
+  datasource:
+    driver-class-name: com.mysql.cj.jdbc.Driver
+    url: jdbc:mysql://c88-mysql:3306/c88?serverTimezone=GMT&useUnicode=true&characterEncoding=utf8&useSSL=false
+    username: root
+    password: toxnMCaR7ABydiij74QoKNF7
+  redis:
+    password: cc6c1ad6-0fb8-420f-8c05-00afa195b17e
+    database: 0
+    host: c88-redis
+    port: 6379
+  cloud:
+    kubernetes:
+      client: c88
+  rabbitmq:
+    host: c88-rabbitmq.c88
+    port: 5672
+    username: default_user_waTxIGEPnMjEqg2Q12f
+    password: mNfAlXCjddAfUTNWDQ8R9BtjNs2TX8gT
+  kafka:
+    listener:
+      ack-mode: MANUAL
+    bootstrap-servers: 10.251.222.1:9092,10.251.222.2:9092,10.251.222.3:9092
+    producer:
+      value-serializer: org.springframework.kafka.support.serializer.JsonSerializer
+    consumer:
+      value-deserializer: org.springframework.kafka.support.serializer.JsonDeserializer
+      properties:
+        spring:
+          json:
+            trusted:
+              packages: '*'
+  cache:
+    # 缓存类型 redis、none(不使用缓存)
+    type: redis
+    # 缓存时间(单位：ms)
+    redis:
+      time-to-live: 3600000
+      # 缓存null值，防止缓存穿透
+      cache-null-values: true
+      # 允许使用缓存前缀
+      use-key-prefix: true
+      # 缓存前缀，没有设置使用注解的缓存名称(value)作为前缀，和注解的key用双冒号::拼接组成完整缓存key
+      key-prefix: 'game:'
+
+redisson:
+  address: redis://c88-redis:6379
+  password: cc6c1ad6-0fb8-420f-8c05-00afa195b17e
+
+mybatis-plus:
+  mapper-locations: classpath:mapper/*.xml
+  configuration:
+    log-impl: org.apache.ibatis.logging.stdout.StdOutImpl
+    map-underscore-to-camel-case: true
+
+#GCP設定
+file:
+  bucket: stg-comebet
+  upload:
+    root: https://stg-comebet.storage.googleapis.com
+    temp:
+    web:
+      root: https://stg-comebet.storage.googleapis.com
+
+#中心任務啟用狀態
+center-task-client:
+  enable: false
+
+#中心任務設定
+xxl:
+  job:
+    executor:
+      ip:
+      log-retention-days: 30
+      app-name: payment
+      log-path: ./logs/
+      address:
+      port: 9999
+    accessToken:
+    admin:
+      addresses: http://127.0.0.1:8080/xxl-job-admin

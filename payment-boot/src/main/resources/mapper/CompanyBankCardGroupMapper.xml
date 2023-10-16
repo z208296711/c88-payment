@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.CompanyBankCardGroupMapper">
+
+    <select id="findCompanyCardGroup" resultType="com.c88.payment.pojo.vo.CompanyBankCardGroupVO">
+        select pcg.id       id,
+               pcg.name     name,
+               pcg.note     note,
+               count(pc.id) count
+        from payment_company_bank_card_group pcg
+                 left join payment_company_bank_card pc on pc.group_id = pcg.id and pc.deleted=0
+        <where>
+            <if test='name !=null and name.trim() neq "" '>
+                AND pcg.name = #{name}
+            </if>
+        </where>
+        group by pcg.id
+    </select>
+</mapper>

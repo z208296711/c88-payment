@@ -1,0 +1,263 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+        "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="com.c88.payment.mapper.MemberRechargeMapper">
+
+    <select id="queryOnlineRechargeList" resultType="com.c88.payment.pojo.vo.RechargeVO">
+        SELECT pd.id,
+               pd.trade_no,
+               pd.out_trade_no,
+               pd.username,
+               pd.real_name,
+               pd.member_id,
+--                ml.name AS level,
+               pd.amount,
+--                ad.name AS activityDeposit,
+               pd.fee,
+               pd.real_amount,
+               pt.name AS payType,
+               pd.bank_card_code,
+               pd.bank,
+               pm.name AS merchant,
+               pd.notes,
+               pd.remark,
+               pd.status,
+               pd.check_user,
+               pd.success_time,
+               pd.gmt_create
+        FROM payment_member_recharge pd
+--         LEFT JOIN member_level ml ON ml.id = pd.level_id
+--         LEFT JOIN activity_deposit ad ON ad.id = pd.activity_deposit_id
+        LEFT JOIN payment_recharge_type pt ON pt.id = pd.recharge_type_id
+        LEFT JOIN payment_merchant pm ON pm.id = pd.merchant_id
+        <where>
+            AND pd.type in (0,3)
+            <if test='queryParams.name !=null '>
+                AND pd.username= #{queryParams.name}
+            </if>
+            <if test='queryParams.tradeNo !=null '>
+                AND pd.trade_no =#{queryParams.tradeNo}
+            </if>
+            <if test='queryParams.levelId !=null '>
+                AND pd.level_id=#{queryParams.levelId})
+            </if>
+            <if test='queryParams.merchantId !=null '>
+                AND pd.merchant_id = #{queryParams.merchantId}
+            </if>
+            <if test='queryParams.status !=null '>
+                AND pd.status = #{queryParams.status}
+            </if>
+            <if test='queryParams.rechargeTypeId !=null '>
+                AND pd.recharge_type_id = #{queryParams.rechargeTypeId}
+            </if>
+            <if test='queryParams.timeType == 1'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.gmt_create &gt;= #{param2.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.gmt_create &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 2'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.success_time &gt;= #{queryParams.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.success_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+        </where>
+        ORDER BY pd.id DESC
+    </select>
+
+    <select id="queryInlineRechargeList" resultType="com.c88.payment.pojo.vo.RechargeVO">
+        SELECT pd.id,
+               pd.trade_no,
+               pd.out_trade_no,
+               pd.username,
+               pd.real_name,
+               pd.member_id,
+               pd.member_level_name as memberLevelName,
+               pd.amount,
+               pd.recharge_award_name,
+               pd.fee,
+               pd.real_amount,
+               pt.name AS rechargeType,
+               pd.bank_card_code,
+               pd.bank,
+               pm.name AS merchant,
+               pd.notes,
+               pd.remark,
+               pd.status,
+               pd.check_user,
+               pd.type,
+               pd.success_time,
+               pd.gmt_create
+        FROM payment_member_recharge pd
+        LEFT JOIN payment_recharge_type pt ON pt.id = pd.recharge_type_id
+        LEFT JOIN payment_merchant pm ON pm.id = pd.merchant_id
+        <where>
+            AND pd.type in (1,2)
+            <if test='queryParams.name !=null '>
+                AND pd.username= #{queryParams.name}
+            </if>
+            <if test='queryParams.tradeNo !=null '>
+                AND pd.trade_no =#{queryParams.tradeNo}
+            </if>
+            <if test='queryParams.memberLevelName !=null '>
+                AND pd.member_level_name=#{queryParams.memberLevelName}
+            </if>
+            <if test='queryParams.merchantId !=null '>
+                AND pd.merchant_id = #{queryParams.merchantId}
+            </if>
+            <if test='queryParams.status !=null '>
+                AND pd.status = #{queryParams.status}
+            </if>
+            <if test='queryParams.rechargeTypeId !=null '>
+                AND pd.recharge_type_id = #{queryParams.rechargeTypeId}
+            </if>
+            <if test='queryParams.timeType == 1'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.gmt_create &gt;= #{queryParams.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.gmt_create &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 2'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.success_time &gt;= #{queryParams.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.success_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+        </where>
+        ORDER BY pd.id DESC
+    </select>
+
+    <select id="queryInlineRechargeListFormExcel" resultType="com.c88.payment.pojo.vo.RechargeInlineExcelVO">
+        SELECT CASE pd.type WHEN 1 THEN '用戶充值' WHEN 2 THEN '手動補單(自營卡)' END AS type,
+               pd.trade_no,
+               pd.username,
+               pd.real_name,
+               pd.member_level_name AS level,
+               pd.amount,
+               -- 存送優惠實作後要調整
+            -- ad.name AS activityDeposit,
+               pd.bank_card_code,
+               pd.bank,
+               pd.notes,
+               pd.remark,
+               CASE pd.status WHEN 0 THEN '處理中' WHEN 1 THEN '成功到帳' WHEN 2 THEN '充值失敗' END AS status,
+               pd.check_user,
+               pd.success_time,
+               pd.gmt_create
+        FROM payment_member_recharge pd
+        <where>
+            AND pd.type in (1,2)
+            <if test='queryParams.name !=null '>
+                AND pd.username= #{queryParams.name}
+            </if>
+            <if test='queryParams.tradeNo !=null '>
+                AND pd.trade_no =#{queryParams.tradeNo}
+            </if>
+            <if test='queryParams.memberLevelName !=null '>
+                AND pd.member_level_name=#{queryParams.memberLevelName}
+            </if>
+            <if test='queryParams.merchantId !=null '>
+                AND pd.merchant_id = #{queryParams.merchantId}
+            </if>
+            <if test='queryParams.status !=null '>
+                AND pd.status = #{queryParams.status}
+            </if>
+            <if test='queryParams.rechargeTypeId !=null '>
+                AND pd.recharge_type_id = #{queryParams.rechargeTypeId}
+            </if>
+            <if test='queryParams.timeType == 1'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.gmt_create &gt;= #{queryParams.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.gmt_create &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+            <if test='queryParams.timeType == 2'>
+                <if test='queryParams.startTime !=null '>
+                    AND pd.success_time &gt;= #{queryParams.startTime}
+                </if>
+                <if test='queryParams.endTime !=null '>
+                    AND pd.success_time &lt;= #{queryParams.endTime}
+                </if>
+            </if>
+        </where>
+        ORDER BY pd.id DESC
+    </select>
+
+    <select id="findMemberRechargeTypes" resultType="com.c88.payment.pojo.vo.RechargeTypeVO">
+        SELECT DISTINCT pt.id, pt.name, pt.sort, pt.type
+        FROM c88.payment_member_channel mc
+                 LEFT JOIN c88.channel_tag ct on mc.id = ct.channel_id
+                 LEFT JOIN c88.member_tag mt on ct.tag_id=mt.tag_id
+                 LEFT JOIN c88.member m on mt.member_id=m.id
+                 LEFT JOIN c88.payment_recharge_type pt on pt.id=mc.recharge_type_id
+        WHERE m.id = #{memberId} and mc.status = 1 and mc.deleted = 0
+    </select>
+
+
+    <select id="findMemberTotalRecharge" resultType="com.c88.payment.vo.MemberTotalRechargeVO">
+        select member_id,
+               username,
+               ifnull(sum(amount), 0) as amount
+        from payment_member_recharge
+        where status = 1
+          and gmt_modified between #{startTime} and #{endTime}
+        group by member_id
+    </select>
+    <select id="findMemberWinLossByDate" resultType="com.c88.payment.pojo.vo.MemberWinLossVO">
+        select createDate,username,memberId
+        ,sum(case when AmountType = 1 then amount else 0 end) depositAmount
+        ,sum(case when AmountType = 1 then 1 else 0 end) depositRowNum
+        ,sum(case when AmountType = 1 then awardAmount else 0 end) depositAward
+        ,sum(case when AmountType = 1 then fee else 0 end) fee
+        ,sum(case when AmountType = 2 then amount else 0 end) withdrawAmount
+        ,sum(case when AmountType = 2 then 1 else 0 end) withdrawRowNum
+        ,sum(case when AmountType = 6 then amount else 0 end) bonus
+        from (
+            select date(gmt_create) createDate,username,member_id memberId, 1 as AmountType,amount,recharge_award_amount awardAmount,fee
+            from payment_member_recharge
+            where status = 1
+                <if test='startTime !=null and endTime !=null'>
+                     and gmt_create >= #{startTime} and gmt_create &lt;= #{endTime}
+                </if>
+                <if test="username !=null and  username !='' ">
+                    and username = #{username}
+                </if>
+            union all
+            select date(gmt_create) createDate,username,uid,2 as AmountType,amount,0 awardAmount ,0 fee
+            from payment_member_withdraw
+            where
+                <if test='startTime !=null and endTime !=null'>
+                    gmt_create >= #{startTime} and gmt_create &lt;= #{endTime}
+                </if>
+                <if test="username !=null and  username !='' ">
+                    and username = #{username}
+                </if>
+                 and type=0 and remit_state in(2,4)
+            union all
+            select date(gmt_create) createDate,username,member_id,6 as AmountType,amount,0 awardAmount ,0 fee
+            from payment_member_bonus_record
+            where
+                <if test='startTime !=null and endTime !=null'>
+                    gmt_create >= #{startTime} and gmt_create &lt;= #{endTime}
+                </if>
+                <if test="username !=null and  username !=''  ">
+                    and username = #{username}
+                </if>
+        ) base
+        group by createDate,memberId
+
+
+    </select>
+</mapper>
